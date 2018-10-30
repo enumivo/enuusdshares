@@ -54,6 +54,40 @@ void ex::receivedusd(const currency::transfer &transfer) {
     return;
   }
 
+  // get ENU balance
+  double enu_balance = enumivo::token(N(enu.token)).
+	   get_balance(N(enu.usd.mm), enumivo::symbol_type(ENU_SYMBOL).name()).amount;
+  enu_balance = enu_balance/10000;
+
+  // get USD balance
+  double usd_balance = enumivo::token(N(stable.coin)).
+	   get_balance(N(enu.usd.mm), enumivo::symbol_type(USD_SYMBOL).name()).amount;
+  usd_balance = usd_balance/10000;
+
+  // get total shares
+  double shares = enumivo::token(N(shares.coin)).
+	   get_supply(enumivo::symbol_type(ENUUSD_SYMBOL).name()).amount;
+  shares = shares/10000;
+
+  double received = transfer.quantity.amount;
+  received = received/10000;
+
+  double product_old = usd_balance * enu_balance;
+  double product_new = (usd_balance+received) * enu_balance;
+
+  double new_shares = (shares*(product_new - product_old))/product_old;
+
+  auto quantity = asset(10000*new_shares, ENUUSD_SYMBOL);
+
+  action(permission_level{_self, N(active)}, N(shares.coin), N(issue),
+         std::make_tuple(transfer.from, quantity,
+                         std::string("Issue new ENUUSD shares")))
+      .send();
+
+  action(permission_level{_self, N(active)}, N(stable.coin), N(transfer),
+         std::make_tuple(_self, N(enu.usd.mm), transfer.quantity,
+                         std::string("Buy ENUUSD shares with ENU")))
+      .send();
 }
 
 void ex::receivedshares(const currency::transfer &transfer) {

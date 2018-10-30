@@ -38,11 +38,13 @@ void ex::receivedenu(const currency::transfer &transfer) {
 
   auto quantity = asset(10000*new_shares, ENUUSD_SYMBOL);
 
+  /*
   action(permission_level{_self, N(active)}, N(shares.coin), N(issue),
          std::make_tuple(transfer.to, quantity,
                          std::string("Issue new ENUUSD shares")))
       .send();
-
+  */
+ 
   action(permission_level{_self, N(active)}, N(enu.token), N(transfer),
          std::make_tuple(_self, N(enu.usd.mm), transfer.quantity,
                          std::string("Buy ENUUSD shares with ENU")))

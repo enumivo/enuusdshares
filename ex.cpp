@@ -113,17 +113,19 @@ void ex::receivedshares(const currency::transfer &transfer) {
   double received = transfer.quantity.amount;
   received = received/10000;
 
-  auto usdportion = asset(10000*usd_balance*(received/shares), USD_SYMBOL);
+  double usdportion = usd_balance*(received/shares);
+  auto usd = asset(10000*usdportion, USD_SYMBOL);
 
   action(permission_level{N(enu.usd.mm), N(active)}, N(stable.coin), N(transfer),
-         std::make_tuple(N(enu.usd.mm), transfer.from, usdportion,
+         std::make_tuple(N(enu.usd.mm), transfer.from, usd,
                          std::string("Divest ENUUSD shares for USD")))
       .send();
 
-  auto enuportion = asset(10000*enu_balance*(received/shares), ENU_SYMBOL);
+  double enuportion = enu_balance*(received/shares);
+  auto enu = asset(10000*enuportion, ENU_SYMBOL);
 
   action(permission_level{N(enu.usd.mm), N(active)}, N(enu.token), N(transfer),
-         std::make_tuple(N(enu.usd.mm), transfer.from, enuportion,
+         std::make_tuple(N(enu.usd.mm), transfer.from, enu,
                          std::string("Divest ENUUSD shares for ENU")))
       .send();
 
